@@ -8,10 +8,14 @@
     <!-- Bootstrap-->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet"
         integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
-
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM"
         crossorigin="anonymous"></script>
+
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"
+        integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+
     <title>Hello, world!</title>
 </head>
 
@@ -34,7 +38,7 @@
     </nav>
 
     <div class="container mt-5">
-        <div class="row">
+        <div class="row mb-4">
             <div class="col-md-12 text-center">
                 <h1>NFA to DFA Converter</h1>
                 <p class="lead">Convert Nondeterministic Finite Automata (NFA) to Deterministic Finite Automata (DFA)
@@ -45,41 +49,45 @@
         <div class="row">
             <!-- NFA Section -->
             <div class="col-md-6">
-                <h2>NFA Section</h2>
+                <h2>NFA</h2>
                 <!-- Buttons for NFA -->
+                <div class="mt-4 mb-2" style="line-height: 50px;">
+                    <button class="btn btn-primary" onclick="addState()">Add State</button>
+                    <button class="btn btn-primary" onclick="addTransition()">Add Transition</button>
+                    <button class="btn btn-primary" onclick="addAcceptState()">Add Accept State</button>
+                    <button class="btn btn-primary" onclick="setStartState()">Set Start State</button>
+                </div>
+
+                <div class="mb-4" style="line-height: 50px;">
+                    <button class="btn btn-danger" onclick="removeState()">Remove State</button>
+                    <button class="btn btn-danger" onclick="removeTransition()">Remove Transition</button>
+                    <button class="btn btn-danger" onclick="removeAcceptState()">Remove Accept State</button>
+                    <button class="btn btn-danger" onclick="clearNfa()">Clear</button>
+                </div>
+                <!-- JSON Text for NFA -->
                 <div class="mb-3">
-                    <button class="btn btn-primary" onclick="addState('nfa')">Add State</button>
-                    <button class="btn btn-primary" onclick="addTransition('nfa')">Add Transition</button>
-                    <!-- Add more buttons as needed -->
+                    <textarea id="nfa-json-text" class="form-control" rows="7" readonly></textarea>
                 </div>
                 <!-- SVG for NFA -->
                 <div id="nfa-svg-container">
                     <!-- SVG content will be added dynamically here -->
                 </div>
-                <!-- JSON Text for NFA -->
-                <div class="mb-3">
-                    <h4>JSON Representation</h4>
-                    <textarea id="nfa-json-text" class="form-control" rows="7"></textarea>
-                </div>
             </div>
 
             <!-- DFA Section -->
             <div class="col-md-6">
-                <h2>DFA Section</h2>
+                <h2>DFA</h2>
                 <!-- Buttons for DFA -->
+                <div class="my-4" style="line-height: 50px;">
+                    <button class="btn btn-primary" onclick="convertNfaToDfa()">Convert NFA to DFA</button>
+                </div>
+                <!-- JSON Text for DFA -->
                 <div class="mb-3">
-                    <button class="btn btn-primary" onclick="addState('dfa')">Add State</button>
-                    <button class="btn btn-primary" onclick="addTransition('dfa')">Add Transition</button>
-                    <!-- Add more buttons as needed -->
+                    <textarea id="dfa-json-text" class="form-control" rows="7" readonly></textarea>
                 </div>
                 <!-- SVG for DFA -->
                 <div id="dfa-svg-container">
                     <!-- SVG content will be added dynamically here -->
-                </div>
-                <!-- JSON Text for DFA -->
-                <div class="mb-3">
-                    <h4>JSON Representation</h4>
-                    <textarea id="dfa-json-text" class="form-control" rows="7" readonly></textarea>
                 </div>
             </div>
         </div>
@@ -95,7 +103,7 @@
                     <li>Add states to the NFA or DFA section using the "Add State" button.</li>
                     <li>Add transitions between states using the "Add Transition" button.</li>
                     <li>Review the JSON representation of your NFA and DFA in the respective text areas.</li>
-                    <li>Explore additional features such as clearing, saving, and exporting.</li>
+                    <li>Explore additional features such as clearing.</li>
                 </ol>
                 <p>
                     Feel free to experiment and use the converter to analyze and visualize your automata.
@@ -110,5 +118,200 @@
         <p>&copy; 2024 NFA to DFA Converter | <a href="#">GitHub Repository</a></p>
     </footer>
 </body>
+
+<script>
+    var nfa = {
+        "states": [],
+        "transitions": [],
+        "startState": "",
+        "acceptStates": [],
+    };
+
+    var dfa = {
+        "states": [],
+        "transitions": [],
+        "startState": "",
+        "acceptStates": [],
+        "symbols": [],
+    };
+
+    function renderNfaJson() {
+        $("#nfa-json-text").val(JSON.stringify(nfa, null, 2));
+    }
+
+    function initialize() {
+        renderNfaJson();
+    }
+
+    function addState() {
+        var state = prompt("Enter state name:");
+        if (state == null || state == "") {
+            return;
+        }
+
+        //if already exist
+        if (nfa.states.indexOf(state) > -1) {
+            return;
+        }
+
+        nfa.states.push(state);
+        renderNfaJson();
+    }
+
+    function addTransition() {
+        var fromState = prompt("Enter from state:");
+        if (fromState == null || fromState == "") {
+            return;
+        }
+
+        var symbol = prompt("Enter symbol:");
+        if (symbol == null || symbol == "") {
+            return;
+        }
+
+        var toState = prompt("Enter to state:");
+        if (toState == null || toState == "") {
+            return;
+        }
+
+        //if state not exist
+        if (nfa.states.indexOf(fromState) == -1 || nfa.states.indexOf(toState) == -1) {
+            return;
+        }
+
+        //if transtion already exist
+        for (var i = 0; i < nfa.transitions.length; i++) {
+            if (nfa.transitions[i].fromState == fromState && nfa.transitions[i].symbol == symbol && nfa.transitions[i].toState == toState) {
+                return;
+            }
+        }
+
+        nfa.transitions.push({
+            "fromState": fromState,
+            "symbol": symbol,
+            "toState": toState
+        });
+        renderNfaJson();
+    }
+
+    function addAcceptState() {
+        var acceptState = prompt("Enter accept state:");
+        if (acceptState == null || acceptState == "") {
+            return;
+        }
+
+        //if state not exist
+        if (nfa.states.indexOf(acceptState) == -1) {
+            return;
+        }
+
+        //if accept state already exist
+        if (nfa.acceptStates.indexOf(acceptState) > -1) {
+            return;
+        }
+
+        nfa.acceptStates.push(acceptState);
+        renderNfaJson();
+    }
+
+    function setStartState() {
+        var startState = prompt("Enter start state:");
+        if (startState == null || startState == "") {
+            return;
+        }
+
+        //if state not exist
+        if (nfa.states.indexOf(startState) == -1) {
+            return;
+        }
+
+        nfa.startState = startState;
+        renderNfaJson();
+    }
+
+    function removeState() {
+        var state = prompt("Enter state to remove:");
+        if (state == null || state == "") {
+            return;
+        }
+
+        var index = nfa.states.indexOf(state);
+        if (index > -1) {
+            nfa.states.splice(index, 1);
+        }
+
+        index = nfa.acceptStates.indexOf(state);
+        if (index > -1) {
+            nfa.acceptStates.splice(index, 1);
+        }
+
+        if (nfa.startState == state) {
+            nfa.startState = "";
+        }
+
+        for (var i = 0; i < nfa.transitions.length; i++) {
+            if (nfa.transitions[i].fromState == state || nfa.transitions[i].toState == state) {
+                nfa.transitions.splice(i, 1);
+                i--;
+            }
+        }
+
+        renderNfaJson();
+    }
+
+    function removeTransition() {
+        var fromState = prompt("Enter from state:");
+        if (fromState == null || fromState == "") {
+            return;
+        }
+
+        var symbol = prompt("Enter symbol:");
+        if (symbol == null || symbol == "") {
+            return;
+        }
+
+        var toState = prompt("Enter to state:");
+        if (toState == null || toState == "") {
+            return;
+        }
+
+        for (var i = 0; i < nfa.transitions.length; i++) {
+            if (nfa.transitions[i].fromState == fromState && nfa.transitions[i].symbol == symbol && nfa.transitions[i].toState == toState) {
+                nfa.transitions.splice(i, 1);
+                i--;
+            }
+        }
+
+        renderNfaJson();
+    }
+
+    function removeAcceptState() {
+        var acceptState = prompt("Enter accept state to remove:");
+        if (acceptState == null || acceptState == "") {
+            return;
+        }
+
+        var index = nfa.acceptStates.indexOf(acceptState);
+        if (index > -1) {
+            nfa.acceptStates.splice(index, 1);
+        }
+
+        renderNfaJson();
+    }
+
+    function clearNfa() {
+        nfa.states = [];
+        nfa.transitions = [];
+        nfa.startState = "";
+        nfa.acceptStates = [];
+
+        renderNfaJson();
+    }
+    
+
+    $(document).ready(function () {
+        initialize();
+    });
+</script>
 
 </html>
