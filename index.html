@@ -160,11 +160,12 @@
             </div>
 
         </div>
+    </div>
 
-        <!-- Footer Section -->
-        <footer class="bg-dark text-white text-center py-3 mt-5">
-            <p>&copy; 2024 NFA to DFA Converter | <a href="#">GitHub Repository</a></p>
-        </footer>
+    <!-- Footer Section -->
+    <footer class="bg-dark text-white text-center py-3 mt-5">
+        <p>&copy; 2024 NFA to DFA Converter | <a href="#">GitHub Repository</a></p>
+    </footer>
 </body>
 
 <script>
@@ -528,7 +529,7 @@
             statesCanGo = [];
 
             var transitions = nfa.transitions.filter(function (transition) {
-                return transition.fromState == state && (transition.symbol == symbol || transition.symbol == "epsilon");
+                return transition.fromState == state && (transition.symbol == symbol);
             });
 
             for (var i = 0; i < transitions.length; i++) {
@@ -567,10 +568,10 @@
 
             return statesCanGo;
         },
-        showDtransTable: function(dtrans_table, symbols) {
+        showDtransTable: function (dtrans_table, symbols) {
             //add head
             var head = "<tr><th>States</th>";
-            symbols.forEach(function(symbol) {
+            symbols.forEach(function (symbol) {
                 head += "<th>" + symbol + "</th>";
             });
             head += "</tr>";
@@ -578,9 +579,9 @@
 
             //add body
             var body = "";
-            dtrans_table.forEach(function(dfaState) {
+            dtrans_table.forEach(function (dfaState) {
                 body += "<tr><td>" + dfaState.states + "</td>";
-                symbols.forEach(function(symbol) {
+                symbols.forEach(function (symbol) {
                     body += "<td>" + dfaState.canGoToStatesWith[symbol] + "</td>";
                 });
                 body += "</tr>";
@@ -626,11 +627,11 @@
                 });
 
                 dtrans_table.push(dfaState);
-                
+
                 //check if new states added
                 symbols.forEach(function (symbol) {
                     createdState = dfaState.canGoToStatesWith[symbol]
-                    
+
                     if (createdState != "" && dtrans_table.filter(function (state) { return state.states == createdState }).length == 0 && dtrans_queue.indexOf(createdState) == -1) {
                         dtrans_queue.push(createdState);
                     }
