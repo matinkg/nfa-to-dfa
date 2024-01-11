@@ -499,6 +499,48 @@
 
             return simplifiedNfa;
         },
+        isNfaValid: function(){
+            //check if start state exist
+            if(nfa.states.indexOf(nfa.startState) == -1){
+                alert("Start state not exist");
+                return false;
+            }
+
+            //check if at least one accept state exist
+            if(nfa.acceptStates.length == 0){
+                alert("At least one accept state must exist");
+                return false;
+            }
+
+            //check if accept states exist
+            for(var i = 0; i < nfa.acceptStates.length; i++){
+                if(nfa.states.indexOf(nfa.acceptStates[i]) == -1){
+                    alert("Accept state " + nfa.acceptStates[i] + " not exist");
+                    return false;
+                }
+            }
+
+            //check if transitions are valid
+            for(var i = 0; i < nfa.transitions.length; i++){
+                var fromState = nfa.transitions[i].fromState;
+                var symbol = nfa.transitions[i].symbol;
+                var toState = nfa.transitions[i].toState;
+
+                //check if from state exist
+                if(nfa.states.indexOf(fromState) == -1){
+                    alert("From state " + fromState + " not exist");
+                    return false;
+                }
+
+                //check if to state exist
+                if(nfa.states.indexOf(toState) == -1){
+                    alert("To state " + toState + " not exist");
+                    return false;
+                }
+            }
+
+            return true;
+        }
     };
 
     var n2dConverter = {
@@ -590,6 +632,12 @@
         },
         convertNfaToDfa: function (nfa) {
             dfa.clearDfa();
+
+            //check if nfa is valid
+            if(!nfa.isNfaValid()){
+                return;
+            }
+            
             var symbols = nfa.symbols();
 
             //make dfa start state
