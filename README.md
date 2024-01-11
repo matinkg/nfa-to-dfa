@@ -2,6 +2,10 @@
 
 This is a web-based tool for converting Nondeterministic Finite Automata (NFA) to Deterministic Finite Automata (DFA). The converter provides both a visual representation and a JSON format of the automata.
 
+## Demo
+
+A demo of the NFA to DFA Converter is available at [Demo](https://matinkg.github.io/nfa-to-dfa/).
+
 ## Getting Started
 
 To use the NFA to DFA Converter, simply open the `index.html` file in a web browser or deploy it on a web server. The tool allows you to interactively build and convert automata.
