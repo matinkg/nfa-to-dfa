@@ -14,8 +14,8 @@
 }
 
 .node.accept-state circle {
-	stroke: #919191;
     fill: #919191;
+	stroke-width: 3px;
 }
 
 .node.accept-state .label{

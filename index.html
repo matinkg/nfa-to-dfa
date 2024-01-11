@@ -190,6 +190,12 @@
                 var symbol = nfa.transitions[i].symbol;
                 var toState = nfa.transitions[i].toState;
 
+                //if transition with same from and to state exist, merge symbols
+                var edge = g.edge(fromState, toState);
+                if (edge != undefined) {
+                    symbol = edge.label + ", " + symbol;
+                }
+
                 g.setEdge(fromState, toState, { label: symbol });
             }
 
