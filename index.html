@@ -52,17 +52,17 @@
                 <h2>NFA</h2>
                 <!-- Buttons for NFA -->
                 <div class="mt-4 mb-2" style="line-height: 50px;">
-                    <button class="btn btn-primary" onclick="addState()">Add State</button>
-                    <button class="btn btn-primary" onclick="addTransition()">Add Transition</button>
-                    <button class="btn btn-primary" onclick="addAcceptState()">Add Accept State</button>
-                    <button class="btn btn-primary" onclick="setStartState()">Set Start State</button>
+                    <button class="btn btn-primary" onclick="nfa.addState()">Add State</button>
+                    <button class="btn btn-primary" onclick="nfa.addTransition()">Add Transition</button>
+                    <button class="btn btn-primary" onclick="nfa.addAcceptState()">Add Accept State</button>
+                    <button class="btn btn-primary" onclick="nfa.setStartState()">Set Start State</button>
                 </div>
 
                 <div class="mb-4" style="line-height: 50px;">
-                    <button class="btn btn-danger" onclick="removeState()">Remove State</button>
-                    <button class="btn btn-danger" onclick="removeTransition()">Remove Transition</button>
-                    <button class="btn btn-danger" onclick="removeAcceptState()">Remove Accept State</button>
-                    <button class="btn btn-danger" onclick="clearNfa()">Clear</button>
+                    <button class="btn btn-danger" onclick="nfa.removeState()">Remove State</button>
+                    <button class="btn btn-danger" onclick="nfa.removeTransition()">Remove Transition</button>
+                    <button class="btn btn-danger" onclick="nfa.removeAcceptState()">Remove Accept State</button>
+                    <button class="btn btn-danger" onclick="nfa.clearNfa()">Clear</button>
                 </div>
                 <!-- JSON Text for NFA -->
                 <div class="mb-3">
@@ -125,189 +125,213 @@
         "transitions": [],
         "startState": "",
         "acceptStates": [],
-    };
-
-    var dfa = {
-        "states": [],
-        "transitions": [],
-        "startState": "",
-        "acceptStates": [],
-        "symbols": [],
-    };
-
-    function renderNfaJson() {
-        $("#nfa-json-text").val(JSON.stringify(nfa, null, 2));
-    }
-
-    function initialize() {
-        renderNfaJson();
-    }
-
-    function addState() {
-        var state = prompt("Enter state name:");
-        if (state == null || state == "") {
-            return;
-        }
-
-        //if already exist
-        if (nfa.states.indexOf(state) > -1) {
-            return;
-        }
-
-        nfa.states.push(state);
-        renderNfaJson();
-    }
-
-    function addTransition() {
-        var fromState = prompt("Enter from state:");
-        if (fromState == null || fromState == "") {
-            return;
-        }
-
-        var symbol = prompt("Enter symbol:");
-        if (symbol == null || symbol == "") {
-            return;
-        }
-
-        var toState = prompt("Enter to state:");
-        if (toState == null || toState == "") {
-            return;
-        }
-
-        //if state not exist
-        if (nfa.states.indexOf(fromState) == -1 || nfa.states.indexOf(toState) == -1) {
-            return;
-        }
-
-        //if transtion already exist
-        for (var i = 0; i < nfa.transitions.length; i++) {
-            if (nfa.transitions[i].fromState == fromState && nfa.transitions[i].symbol == symbol && nfa.transitions[i].toState == toState) {
+        renderJson: function () {
+            $("#nfa-json-text").val(JSON.stringify(nfa, null, 2));
+        },
+        addState: function () {
+            var state = prompt("Enter state name:");
+            if (state == null || state == "") {
                 return;
             }
-        }
 
-        nfa.transitions.push({
-            "fromState": fromState,
-            "symbol": symbol,
-            "toState": toState
-        });
-        renderNfaJson();
-    }
+            //if already exist
+            if (nfa.states.indexOf(state) > -1) {
+                return;
+            }
 
-    function addAcceptState() {
-        var acceptState = prompt("Enter accept state:");
-        if (acceptState == null || acceptState == "") {
-            return;
-        }
+            nfa.states.push(state);
+            nfa.renderJson();
+        },
+        addTransition: function () {
+            var fromState = prompt("Enter from state:");
+            if (fromState == null || fromState == "") {
+                return;
+            }
 
-        //if state not exist
-        if (nfa.states.indexOf(acceptState) == -1) {
-            return;
-        }
+            var symbol = prompt("Enter symbol:");
+            if (symbol == null || symbol == "") {
+                return;
+            }
 
-        //if accept state already exist
-        if (nfa.acceptStates.indexOf(acceptState) > -1) {
-            return;
-        }
+            var toState = prompt("Enter to state:");
+            if (toState == null || toState == "") {
+                return;
+            }
 
-        nfa.acceptStates.push(acceptState);
-        renderNfaJson();
-    }
+            //if state not exist
+            if (nfa.states.indexOf(fromState) == -1 || nfa.states.indexOf(toState) == -1) {
+                return;
+            }
 
-    function setStartState() {
-        var startState = prompt("Enter start state:");
-        if (startState == null || startState == "") {
-            return;
-        }
+            //if transtion already exist
+            for (var i = 0; i < nfa.transitions.length; i++) {
+                if (nfa.transitions[i].fromState == fromState && nfa.transitions[i].symbol == symbol && nfa.transitions[i].toState == toState) {
+                    return;
+                }
+            }
 
-        //if state not exist
-        if (nfa.states.indexOf(startState) == -1) {
-            return;
-        }
+            nfa.transitions.push({
+                "fromState": fromState,
+                "symbol": symbol,
+                "toState": toState
+            });
+            nfa.renderJson();
+        },
+        addAcceptState: function () {
+            var acceptState = prompt("Enter accept state:");
+            if (acceptState == null || acceptState == "") {
+                return;
+            }
 
-        nfa.startState = startState;
-        renderNfaJson();
-    }
+            //if state not exist
+            if (nfa.states.indexOf(acceptState) == -1) {
+                return;
+            }
 
-    function removeState() {
-        var state = prompt("Enter state to remove:");
-        if (state == null || state == "") {
-            return;
-        }
+            //if accept state already exist
+            if (nfa.acceptStates.indexOf(acceptState) > -1) {
+                return;
+            }
 
-        var index = nfa.states.indexOf(state);
-        if (index > -1) {
-            nfa.states.splice(index, 1);
-        }
+            nfa.acceptStates.push(acceptState);
+            nfa.renderJson();
+        },
+        setStartState: function () {
+            var startState = prompt("Enter start state:");
+            if (startState == null || startState == "") {
+                return;
+            }
 
-        index = nfa.acceptStates.indexOf(state);
-        if (index > -1) {
-            nfa.acceptStates.splice(index, 1);
-        }
+            //if state not exist
+            if (nfa.states.indexOf(startState) == -1) {
+                return;
+            }
 
-        if (nfa.startState == state) {
+            nfa.startState = startState;
+            nfa.renderJson();
+        },
+        removeState: function () {
+            var state = prompt("Enter state to remove:");
+            if (state == null || state == "") {
+                return;
+            }
+
+            var index = nfa.states.indexOf(state);
+            if (index > -1) {
+                nfa.states.splice(index, 1);
+            }
+
+            index = nfa.acceptStates.indexOf(state);
+            if (index > -1) {
+                nfa.acceptStates.splice(index, 1);
+            }
+
+            if (nfa.startState == state) {
+                nfa.startState = "";
+            }
+
+            for (var i = 0; i < nfa.transitions.length; i++) {
+                if (nfa.transitions[i].fromState == state || nfa.transitions[i].toState == state) {
+                    nfa.transitions.splice(i, 1);
+                    i--;
+                }
+            }
+
+            nfa.renderJson();
+        },
+        removeTransition: function () {
+            var fromState = prompt("Enter from state:");
+            if (fromState == null || fromState == "") {
+                return;
+            }
+
+            var symbol = prompt("Enter symbol:");
+            if (symbol == null || symbol == "") {
+                return;
+            }
+
+            var toState = prompt("Enter to state:");
+            if (toState == null || toState == "") {
+                return;
+            }
+
+            for (var i = 0; i < nfa.transitions.length; i++) {
+                if (nfa.transitions[i].fromState == fromState && nfa.transitions[i].symbol == symbol && nfa.transitions[i].toState == toState) {
+                    nfa.transitions.splice(i, 1);
+                    i--;
+                }
+            }
+
+            nfa.renderJson();
+        },
+        removeAcceptState: function () {
+            var acceptState = prompt("Enter accept state to remove:");
+            if (acceptState == null || acceptState == "") {
+                return;
+            }
+
+            var index = nfa.acceptStates.indexOf(acceptState);
+            if (index > -1) {
+                nfa.acceptStates.splice(index, 1);
+            }
+
+            nfa.renderJson();
+        },
+        clearNfa: function () {
+            nfa.states = [];
+            nfa.transitions = [];
             nfa.startState = "";
-        }
+            nfa.acceptStates = [];
 
-        for (var i = 0; i < nfa.transitions.length; i++) {
-            if (nfa.transitions[i].fromState == state || nfa.transitions[i].toState == state) {
-                nfa.transitions.splice(i, 1);
-                i--;
+            nfa.renderJson();
+        },
+        getSimpleNfa: function () {
+            simplifiedNfa = {
+                "states": [],
+                "transitions": [],
+
+                "startState": "",
+                "acceptStates": [],
+            };
+
+            //add states
+            for (var i = 0; i < nfa.states.length; i++) {
+                simplifiedNfa.states.push(nfa.states[i]);
             }
-        }
 
-        renderNfaJson();
-    }
+            //add transitions
+            //transtions in nfa format fromState: {symbol: [toState1, toState2, ...]}
+            for (var i = 0; i < nfa.transitions.length; i++) {
+                var fromState = nfa.transitions[i].fromState;
+                var symbol = nfa.transitions[i].symbol;
+                var toState = nfa.transitions[i].toState;
 
-    function removeTransition() {
-        var fromState = prompt("Enter from state:");
-        if (fromState == null || fromState == "") {
-            return;
-        }
+                if (simplifiedNfa.transitions[fromState] == undefined) {
+                    simplifiedNfa.transitions[fromState] = {};
+                }
 
-        var symbol = prompt("Enter symbol:");
-        if (symbol == null || symbol == "") {
-            return;
-        }
+                if (simplifiedNfa.transitions[fromState][symbol] == undefined) {
+                    simplifiedNfa.transitions[fromState][symbol] = [];
+                }
 
-        var toState = prompt("Enter to state:");
-        if (toState == null || toState == "") {
-            return;
-        }
-
-        for (var i = 0; i < nfa.transitions.length; i++) {
-            if (nfa.transitions[i].fromState == fromState && nfa.transitions[i].symbol == symbol && nfa.transitions[i].toState == toState) {
-                nfa.transitions.splice(i, 1);
-                i--;
+                simplifiedNfa.transitions[fromState][symbol].push(toState);
             }
+
+            //add start state
+            simplifiedNfa.startState = nfa.startState;
+
+            //add accept states
+            for (var i = 0; i < nfa.acceptStates.length; i++) {
+                simplifiedNfa.acceptStates.push(nfa.acceptStates[i]);
+            }
+
+            return simplifiedNfa;
         }
+    };
 
-        renderNfaJson();
+    function initialize() {
+        nfa.renderJson();
     }
-
-    function removeAcceptState() {
-        var acceptState = prompt("Enter accept state to remove:");
-        if (acceptState == null || acceptState == "") {
-            return;
-        }
-
-        var index = nfa.acceptStates.indexOf(acceptState);
-        if (index > -1) {
-            nfa.acceptStates.splice(index, 1);
-        }
-
-        renderNfaJson();
-    }
-
-    function clearNfa() {
-        nfa.states = [];
-        nfa.transitions = [];
-        nfa.startState = "";
-        nfa.acceptStates = [];
-
-        renderNfaJson();
-    }
-    
 
     $(document).ready(function () {
         initialize();
