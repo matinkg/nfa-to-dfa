@@ -58,12 +58,19 @@
                     <button class="btn btn-primary" onclick="nfa.setStartState()">Set Start State</button>
                 </div>
 
-                <div class="mb-4" style="line-height: 50px;">
+                <div class="my-2" style="line-height: 50px;">
                     <button class="btn btn-danger" onclick="nfa.removeState()">Remove State</button>
                     <button class="btn btn-danger" onclick="nfa.removeTransition()">Remove Transition</button>
                     <button class="btn btn-danger" onclick="nfa.removeAcceptState()">Remove Accept State</button>
                     <button class="btn btn-danger" onclick="nfa.clearNfa()">Clear</button>
                 </div>
+
+                <div class="mb-4" style="line-height: 50px;">
+                    <button class="btn btn-secondary" onclick="nfa.export()">Export</button>
+                    <button class="btn btn-secondary" onclick="nfa.import()">Import</button>
+                </div>
+
+
                 <!-- JSON Text for NFA -->
                 <div class="mb-3">
                     <textarea id="nfa-json-text" class="form-control" rows="7" readonly></textarea>
@@ -285,11 +292,40 @@
 
             nfa.renderJson();
         },
+        export: function(){
+            var json = JSON.stringify(nfa);
+            var blob = new Blob([json], {type: "application/json"});
+            var url  = URL.createObjectURL(blob);
+
+            var a = document.createElement('a');
+            a.download    = "nfa.json";
+            a.href        = url;
+            a.textContent = "Download backup.json";
+            a.click();
+        },
+        import: function(){
+            var file = document.createElement('input');
+            file.type = 'file';
+            file.click();
+            file.onchange = function(){
+                var reader = new FileReader();
+                reader.readAsText(file.files[0]);
+                reader.onload = function(){
+                    var json = JSON.parse(reader.result);
+                    nfa.states = json.states;
+                    nfa.transitions = json.transitions;
+                    nfa.startState = json.startState;
+                    nfa.acceptStates = json.acceptStates;
+
+                    nfa.renderJson();
+                }
+            }
+        },
         getSimpleNfa: function () {
             simplifiedNfa = {
                 "states": [],
                 "transitions": [],
-
+                "symbols": [],
                 "startState": "",
                 "acceptStates": [],
             };
@@ -315,6 +351,14 @@
                 }
 
                 simplifiedNfa.transitions[fromState][symbol].push(toState);
+            }
+
+            //add symbols
+            for (var i = 0; i < nfa.transitions.length; i++) {
+                var symbol = nfa.transitions[i].symbol;
+                if (simplifiedNfa.symbols.indexOf(symbol) == -1) {
+                    simplifiedNfa.symbols.push(symbol);
+                }
             }
 
             //add start state
