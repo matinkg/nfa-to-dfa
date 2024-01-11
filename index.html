@@ -105,7 +105,8 @@
                         <h2>DFA</h2>
                         <!-- Buttons for DFA -->
                         <div class="my-4" style="line-height: 50px;">
-                            <button class="btn btn-primary" onclick="dfa.convertNfaToDfa(nfa)">Convert NFA to DFA</button>
+                            <button class="btn btn-primary" onclick="n2dConverter.convertNfaToDfa(nfa)">Convert NFA to
+                                DFA</button>
                         </div>
                         <!-- JSON Text for DFA -->
                         <div class="mb-3">
@@ -127,31 +128,43 @@
             </div>
         </div>
 
-        <!-- Instructions/Help Section -->
+        <!-- Dtrans Table -->
         <div class="row mt-5">
             <div class="col-md-12">
-                <h2>Instructions/Help</h2>
-                <p>
-                    Welcome to the NFA to DFA Converter! Follow these steps to convert your NFA to DFA:
-                </p>
-                <ol>
-                    <li>Add states to the NFA or DFA section using the "Add State" button.</li>
-                    <li>Add transitions between states using the "Add Transition" button.</li>
-                    <li>Review the JSON representation of your NFA and DFA in the respective text areas.</li>
-                    <li>Explore additional features such as clearing.</li>
-                </ol>
-                <p>
-                    Feel free to experiment and use the converter to analyze and visualize your automata.
-                </p>
+                <h2>Dtrans Table</h2>
+                <table class="table table-bordered mt-4">
+                    <thead id="dtrans-head">
+                    </thead>
+                    <tbody id="dtrans-body">
+                    </tbody>
+                </table>
             </div>
+
+            <!-- Instructions/Help Section -->
+            <div class="row mt-5">
+                <div class="col-md-12">
+                    <h2>Instructions/Help</h2>
+                    <p>
+                        Welcome to the NFA to DFA Converter! Follow these steps to convert your NFA to DFA:
+                    </p>
+                    <ol>
+                        <li>Add states to the NFA or DFA section using the "Add State" button.</li>
+                        <li>Add transitions between states using the "Add Transition" button.</li>
+                        <li>Review the JSON representation of your NFA and DFA in the respective text areas.</li>
+                        <li>Explore additional features such as clearing.</li>
+                    </ol>
+                    <p>
+                        Feel free to experiment and use the converter to analyze and visualize your automata.
+                    </p>
+                </div>
+            </div>
+
         </div>
 
-    </div>
-
-    <!-- Footer Section -->
-    <footer class="bg-dark text-white text-center py-3 mt-5">
-        <p>&copy; 2024 NFA to DFA Converter | <a href="#">GitHub Repository</a></p>
-    </footer>
+        <!-- Footer Section -->
+        <footer class="bg-dark text-white text-center py-3 mt-5">
+            <p>&copy; 2024 NFA to DFA Converter | <a href="#">GitHub Repository</a></p>
+        </footer>
 </body>
 
 <script>
@@ -160,6 +173,21 @@
         "transitions": [],
         "startState": "",
         "acceptStates": [],
+        symbols: function () {
+            var symbols = [];
+            for (var i = 0; i < nfa.transitions.length; i++) {
+                var symbol = nfa.transitions[i].symbol;
+
+                if (symbol == "epsilon") {
+                    continue;
+                }
+
+                if (symbols.indexOf(symbol) == -1) {
+                    symbols.push(symbol);
+                }
+            }
+            return symbols;
+        },
         renderJson: function () {
             $("#nfa-json-text").val(JSON.stringify(nfa, null, 2));
         },
@@ -183,7 +211,7 @@
                     classAttr = "accept-state";
                 }
 
-                g.setNode(state, { label: label, shape: "circle" , class: classAttr});
+                g.setNode(state, { label: label, shape: "circle", class: classAttr });
             }
 
             //add transitions
@@ -192,7 +220,7 @@
                 var symbol = nfa.transitions[i].symbol;
                 var toState = nfa.transitions[i].toState;
 
-                if(symbol == "epsilon"){
+                if (symbol == "epsilon") {
                     symbol = "ε";
                 }
 
@@ -206,9 +234,9 @@
             }
 
             // Set start transition
-            if(nfa.startState != ""){
-                g.setNode("init" , {label: "", shape: "circle", class: "init-state"});
-                g.setEdge("init", nfa.startState, {label: ""});
+            if (nfa.startState != "") {
+                g.setNode("init", { label: "", shape: "circle", class: "init-state" });
+                g.setEdge("init", nfa.startState, { label: "" });
             }
 
             var svg = d3.select("#nfa-svg-container svg"),
@@ -230,7 +258,7 @@
             var initialScale = 0.75;
             svg.call(zoom.transform, d3.zoomIdentity.translate((svg.attr("width") - g.graph().width * initialScale) / 2, 20).scale(initialScale));
         },
-        render: function(){
+        render: function () {
             nfa.renderJson();
             nfa.renderGraph();
         },
@@ -469,8 +497,182 @@
             }
 
             return simplifiedNfa;
-        }
+        },
     };
+
+    var n2dConverter = {
+        getEpsilonClosure: function (nfa) {
+            queue = [];
+            epsilonClosure = [];
+            queue.push(nfa.startState);
+
+            while (queue.length > 0) {
+                var state = queue.shift();
+                epsilonClosure.push(state);
+
+                var transitions = nfa.transitions.filter(function (transition) {
+                    return transition.fromState == state && transition.symbol == "epsilon";
+                });
+
+                for (var i = 0; i < transitions.length; i++) {
+                    var toState = transitions[i].toState;
+                    if (queue.indexOf(toState) == -1) {
+                        queue.push(toState);
+                    }
+                }
+            }
+
+            return epsilonClosure;
+        },
+        whereStateGoWith: function (nfa, state, symbol) {
+            statesCanGo = [];
+
+            var transitions = nfa.transitions.filter(function (transition) {
+                return transition.fromState == state && (transition.symbol == symbol || transition.symbol == "epsilon");
+            });
+
+            for (var i = 0; i < transitions.length; i++) {
+                var toState = transitions[i].toState;
+                if (statesCanGo.indexOf(toState) == -1) {
+                    statesCanGo.push(toState);
+                }
+            }
+
+            //epsilon transitions
+            queue = [];
+            for (var i = 0; i < statesCanGo.length; i++) {
+                queue.push(statesCanGo[i]);
+            }
+
+            while (queue.length > 0) {
+                var state = queue.shift();
+                if (statesCanGo.indexOf(state) == -1) {
+                    statesCanGo.push(state);
+                }
+
+                var transitions = nfa.transitions.filter(function (transition) {
+                    return transition.fromState == state && transition.symbol == "epsilon";
+                });
+
+                for (var i = 0; i < transitions.length; i++) {
+                    var toState = transitions[i].toState;
+                    if (queue.indexOf(toState) == -1) {
+                        queue.push(toState);
+                    }
+                }
+            }
+
+            //sort
+            statesCanGo.sort();
+
+            return statesCanGo;
+        },
+        showDtransTable: function(dtrans_table, symbols) {
+            //add head
+            var head = "<tr><th>States</th>";
+            symbols.forEach(function(symbol) {
+                head += "<th>" + symbol + "</th>";
+            });
+            head += "</tr>";
+            $("#dtrans-head").html(head);
+
+            //add body
+            var body = "";
+            dtrans_table.forEach(function(dfaState) {
+                body += "<tr><td>" + dfaState.states + "</td>";
+                symbols.forEach(function(symbol) {
+                    body += "<td>" + dfaState.canGoToStatesWith[symbol] + "</td>";
+                });
+                body += "</tr>";
+            });
+            $("#dtrans-body").html(body);
+        },
+        convertNfaToDfa: function (nfa) {
+            var dtransitions = [];
+            var symbols = nfa.symbols();
+
+            //make dfa start state
+            epsilonClosure = n2dConverter.getEpsilonClosure(nfa);
+
+            dtrans_table = [];
+            dtrans_queue = [];
+            dtrans_queue.push(epsilonClosure.sort().join(","));
+            while (dtrans_queue.length > 0) {
+                //create dtrans table row
+                dfaState = {
+                    states: dtrans_queue.shift(),
+                    canGoToStatesWith: {},
+                }
+                symbols.forEach(function (symbol) {
+                    dfaState.canGoToStatesWith[symbol] = [];
+                });
+
+                //add states that can go with symbol
+                dfaState.states.split(",").forEach(function (state) {
+                    symbols.forEach(function (symbol) {
+                        var statesCanGo = n2dConverter.whereStateGoWith(nfa, state, symbol);
+
+                        statesCanGo.forEach(function (stateCanGo) {
+                            if (dfaState.canGoToStatesWith[symbol].indexOf(stateCanGo) == -1) {
+                                dfaState.canGoToStatesWith[symbol].push(stateCanGo);
+                            }
+                        });
+                    });
+                });
+
+                //convert states to string
+                symbols.forEach(function (symbol) {
+                    dfaState.canGoToStatesWith[symbol] = dfaState.canGoToStatesWith[symbol].sort().join(",");
+                });
+
+                dtrans_table.push(dfaState);
+                
+                //check if new states added
+                symbols.forEach(function (symbol) {
+                    createdState = dfaState.canGoToStatesWith[symbol]
+                    
+                    if (createdState != "" && dtrans_table.filter(function (state) { return state.states == createdState }).length == 0 && dtrans_queue.indexOf(createdState) == -1) {
+                        dtrans_queue.push(createdState);
+                    }
+                });
+
+            }
+
+            this.showDtransTable(dtrans_table, symbols);
+
+            //create dfa
+            dtrans_table.forEach(function (dfaState) {
+                dfa.states.push(dfaState.states);
+            });
+
+            //add transitions
+            dtrans_table.forEach(function (dfaState) {
+                symbols.forEach(function (symbol) {
+                    if (dfaState.canGoToStatesWith[symbol] != "") {
+                        dfa.transitions.push({
+                            "fromState": dfaState.states,
+                            "symbol": symbol,
+                            "toState": dfaState.canGoToStatesWith[symbol],
+                        });
+                    }
+                });
+            });
+
+            //add start state
+            dfa.startState = epsilonClosure.sort().join(",");
+
+            //add accept states
+            dtrans_table.forEach(function (dfaState) {
+                nfa.acceptStates.forEach(function (acceptState) {
+                    if (dfaState.states.split(",").indexOf(acceptState) > -1) {
+                        dfa.acceptStates.push(dfaState.states);
+                    }
+                });
+            });
+
+            dfa.render();
+        }
+    }
 
     var dfa = {
         "states": [],
@@ -510,7 +712,7 @@
                 var symbol = dfa.transitions[i].symbol;
                 var toState = dfa.transitions[i].toState;
 
-                if(symbol == "epsilon"){
+                if (symbol == "epsilon") {
                     symbol = "ε";
                 }
 
@@ -524,9 +726,9 @@
             }
 
             // Set start transition
-            if(dfa.startState != ""){
-                g.setNode("init" , {label: "", shape: "circle", class: "init-state"});
-                g.setEdge("init", dfa.startState, {label: ""});
+            if (dfa.startState != "") {
+                g.setNode("init", { label: "", shape: "circle", class: "init-state" });
+                g.setEdge("init", dfa.startState, { label: "" });
             }
 
             var svg = d3.select("#dfa-svg-container svg"),
@@ -548,21 +750,19 @@
             var initialScale = 0.75;
             svg.call(zoom.transform, d3.zoomIdentity.translate((svg.attr("width") - g.graph().width * initialScale) / 2, 20).scale(initialScale));
         },
-        render: function(){
+        render: function () {
             dfa.renderJson();
             dfa.renderGraph();
         },
-        convertNfaToDfa: function(nfa){
-            console.log(nfa);
-            dfa.states = nfa.states;
-            dfa.transitions = nfa.transitions;
-            dfa.symbols = nfa.symbols;
-            dfa.startState = nfa.startState;
-            dfa.acceptStates = nfa.acceptStates;
-            dfa.render();
-        }
     }
     function initialize() {
+        //set default nfa
+        var json = { "states": ["q0", "q1", "q2", "q3"], "transitions": [{ "fromState": "q0", "symbol": "0", "toState": "q1" }, { "fromState": "q0", "symbol": "0", "toState": "q0" }, { "fromState": "q0", "symbol": "1", "toState": "q0" }, { "fromState": "q1", "symbol": "0", "toState": "q3" }, { "fromState": "q0", "symbol": "1", "toState": "q2" }, { "fromState": "q2", "symbol": "0", "toState": "q2" }, { "fromState": "q2", "symbol": "0", "toState": "q3" }, { "fromState": "q2", "symbol": "1", "toState": "q3" }, { "fromState": "q3", "symbol": "0", "toState": "q3" }, { "fromState": "q3", "symbol": "1", "toState": "q3" }], "startState": "q0", "acceptStates": ["q3"] }
+        nfa.states = json.states;
+        nfa.transitions = json.transitions;
+        nfa.startState = json.startState;
+        nfa.acceptStates = json.acceptStates;
+
         nfa.render();
     }
 
