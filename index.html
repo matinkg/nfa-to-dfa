@@ -105,7 +105,7 @@
                         <h2>DFA</h2>
                         <!-- Buttons for DFA -->
                         <div class="my-4" style="line-height: 50px;">
-                            <button class="btn btn-primary" onclick="convertNfaToDfa()">Convert NFA to DFA</button>
+                            <button class="btn btn-primary" onclick="dfa.convertNfaToDfa(nfa)">Convert NFA to DFA</button>
                         </div>
                         <!-- JSON Text for DFA -->
                         <div class="mb-3">
@@ -117,7 +117,9 @@
                         <h2>Visual Representation</h2>
                         <!-- SVG for DFA -->
                         <div id="dfa-svg-container" class="mt-4" style="width: 100%; height: 400px;">
-                            <!-- SVG content will be added dynamically here -->
+                            <svg width="500" height="400">
+                                <g />
+                            </svg>
                         </div>
                     </div>
                 </div>
@@ -165,7 +167,7 @@
             var g = new dagreD3.graphlib.Graph().setGraph({});
 
             //reset graph
-            $("svg g").html("");
+            $("#nfa-svg-container svg g").html("");
 
             //add states
             for (var i = 0; i < nfa.states.length; i++) {
@@ -190,6 +192,10 @@
                 var symbol = nfa.transitions[i].symbol;
                 var toState = nfa.transitions[i].toState;
 
+                if(symbol == "epsilon"){
+                    symbol = "ε";
+                }
+
                 //if transition with same from and to state exist, merge symbols
                 var edge = g.edge(fromState, toState);
                 if (edge != undefined) {
@@ -205,7 +211,7 @@
                 g.setEdge("init", nfa.startState, {label: ""});
             }
 
-            var svg = d3.select("svg"),
+            var svg = d3.select("#nfa-svg-container svg"),
                 inner = svg.select("g");
 
             // Set up zoom support
@@ -466,6 +472,96 @@
         }
     };
 
+    var dfa = {
+        "states": [],
+        "transitions": [],
+        "symbols": [],
+        "startState": "",
+        "acceptStates": [],
+        renderJson: function () {
+            $("#dfa-json-text").val(JSON.stringify(dfa, null, 2));
+        },
+        renderGraph: function () {
+            var g = new dagreD3.graphlib.Graph().setGraph({});
+
+            //reset graph
+            $("#dfa-svg-container svg g").html("");
+
+            //add states
+            for (var i = 0; i < dfa.states.length; i++) {
+                var state = dfa.states[i];
+                var label = state;
+                var classAttr = "";
+
+                if (dfa.startState == state) {
+                    classAttr = "start-state";
+                }
+
+                if (dfa.acceptStates.indexOf(state) > -1) {
+                    classAttr = "accept-state";
+                }
+
+                g.setNode(state, { label: label, shape: "circle", class: classAttr });
+            }
+
+            //add transitions
+            for (var i = 0; i < dfa.transitions.length; i++) {
+                var fromState = dfa.transitions[i].fromState;
+                var symbol = dfa.transitions[i].symbol;
+                var toState = dfa.transitions[i].toState;
+
+                if(symbol == "epsilon"){
+                    symbol = "ε";
+                }
+
+                //if transition with same from and to state exist, merge symbols
+                var edge = g.edge(fromState, toState);
+                if (edge != undefined) {
+                    symbol = edge.label + ", " + symbol;
+                }
+
+                g.setEdge(fromState, toState, { label: symbol });
+            }
+
+            // Set start transition
+            if(dfa.startState != ""){
+                g.setNode("init" , {label: "", shape: "circle", class: "init-state"});
+                g.setEdge("init", dfa.startState, {label: ""});
+            }
+
+            var svg = d3.select("#dfa-svg-container svg"),
+                inner = svg.select("g");
+
+            // Set up zoom support
+            var zoom = d3.zoom().on("zoom", function () {
+                inner.attr("transform", d3.event.transform);
+            });
+            svg.call(zoom);
+
+            // Create the renderer
+            var render = new dagreD3.render();
+
+            // Run the renderer. This is what draws the final graph.
+            render(inner, g);
+
+            // Center the graph
+            var initialScale = 0.75;
+            svg.call(zoom.transform, d3.zoomIdentity.translate((svg.attr("width") - g.graph().width * initialScale) / 2, 20).scale(initialScale));
+        },
+        render: function(){
+            dfa.renderJson();
+            dfa.renderGraph();
+        },
+        convertNfaToDfa: function(nfa){
+            console.log(nfa);
+            dfa.states = nfa.states;
+            dfa.transitions = nfa.transitions;
+            dfa.symbols = nfa.symbols;
+            dfa.startState = nfa.startState;
+            dfa.acceptStates = nfa.acceptStates;
+            dfa.render();
+        }
+    }
     function initialize() {
         nfa.render();
     }
