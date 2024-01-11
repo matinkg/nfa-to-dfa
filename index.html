@@ -588,7 +588,7 @@
             $("#dtrans-body").html(body);
         },
         convertNfaToDfa: function (nfa) {
-            var dtransitions = [];
+            dfa.clearDfa();
             var symbols = nfa.symbols();
 
             //make dfa start state
@@ -753,6 +753,14 @@
         render: function () {
             dfa.renderJson();
             dfa.renderGraph();
+        },
+        clearDfa: function () {
+            dfa.states = [];
+            dfa.transitions = [];
+            dfa.startState = "";
+            dfa.acceptStates = [];
+
+            dfa.render();
         },
     }
     function initialize() {
