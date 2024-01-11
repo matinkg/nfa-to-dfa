@@ -1,0 +1,28 @@
+.node rect,
+.node circle,
+.node ellipse,
+.node polygon {
+	stroke: #333;
+	fill: #fff;
+	stroke-width: 1.5px;
+}
+
+.edgePath path {
+	stroke: #333;
+	fill: #333;
+	stroke-width: 1.5px;
+}
+
+.node.accept-state circle {
+	stroke: #919191;
+    fill: #919191;
+}
+
+.node.accept-state .label{
+    fill: #fff;
+}
+
+.node.init-state circle {
+    stroke: none;
+    fill: none;
+}

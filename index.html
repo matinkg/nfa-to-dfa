@@ -18,7 +18,11 @@
         integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
 
     <!-- dagre-d3 -->
+    <script src="https://d3js.org/d3.v5.min.js" charset="utf-8"></script>
     <script src="libs/dagre-d3.min.js"></script>
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="styles/graph.css" />
 </head>
 
 <body>
@@ -86,7 +90,9 @@
                         <h2>Visual Representation</h2>
                         <!-- SVG for NFA -->
                         <div id="nfa-svg-container" class="mt-4" style="width: 100%; height: 400px;">
-                            <!-- SVG content will be added dynamically here -->
+                            <svg width="500" height="400">
+                                <g />
+                            </svg>
                         </div>
                     </div>
                 </div>
@@ -155,6 +161,67 @@
         renderJson: function () {
             $("#nfa-json-text").val(JSON.stringify(nfa, null, 2));
         },
+        renderGraph: function () {
+            var g = new dagreD3.graphlib.Graph().setGraph({});
+
+            //reset graph
+            $("svg g").html("");
+
+            //add states
+            for (var i = 0; i < nfa.states.length; i++) {
+                var state = nfa.states[i];
+                var label = state;
+                var classAttr = "";
+
+                if (nfa.startState == state) {
+                    classAttr = "start-state";
+                }
+
+                if (nfa.acceptStates.indexOf(state) > -1) {
+                    classAttr = "accept-state";
+                }
+
+                g.setNode(state, { label: label, shape: "circle" , class: classAttr});
+            }
+
+            //add transitions
+            for (var i = 0; i < nfa.transitions.length; i++) {
+                var fromState = nfa.transitions[i].fromState;
+                var symbol = nfa.transitions[i].symbol;
+                var toState = nfa.transitions[i].toState;
+
+                g.setEdge(fromState, toState, { label: symbol });
+            }
+
+            // Set start transition
+            if(nfa.startState != ""){
+                g.setNode("init" , {label: "", shape: "circle", class: "init-state"});
+                g.setEdge("init", nfa.startState, {label: ""});
+            }
+
+            var svg = d3.select("svg"),
+                inner = svg.select("g");
+
+            // Set up zoom support
+            var zoom = d3.zoom().on("zoom", function () {
+                inner.attr("transform", d3.event.transform);
+            });
+            svg.call(zoom);
+
+            // Create the renderer
+            var render = new dagreD3.render();
+
+            // Run the renderer. This is what draws the final graph.
+            render(inner, g);
+
+            // Center the graph
+            var initialScale = 0.75;
+            svg.call(zoom.transform, d3.zoomIdentity.translate((svg.attr("width") - g.graph().width * initialScale) / 2, 20).scale(initialScale));
+        },
+        render: function(){
+            nfa.renderJson();
+            nfa.renderGraph();
+        },
         addState: function () {
             var state = prompt("Enter state name:");
             if (state == null || state == "") {
@@ -167,7 +234,7 @@
             }
 
             nfa.states.push(state);
-            nfa.renderJson();
+            nfa.render();
         },
         addTransition: function () {
             var fromState = prompt("Enter from state:");
@@ -202,7 +269,7 @@
                 "symbol": symbol,
                 "toState": toState
             });
-            nfa.renderJson();
+            nfa.render();
         },
         addAcceptState: function () {
             var acceptState = prompt("Enter accept state:");
@@ -221,7 +288,7 @@
             }
 
             nfa.acceptStates.push(acceptState);
-            nfa.renderJson();
+            nfa.render();
         },
         setStartState: function () {
             var startState = prompt("Enter start state:");
@@ -235,7 +302,7 @@
             }
 
             nfa.startState = startState;
-            nfa.renderJson();
+            nfa.render();
         },
         removeState: function () {
             var state = prompt("Enter state to remove:");
@@ -264,7 +331,7 @@
                 }
             }
 
-            nfa.renderJson();
+            nfa.render();
         },
         removeTransition: function () {
             var fromState = prompt("Enter from state:");
@@ -289,7 +356,7 @@
                 }
             }
 
-            nfa.renderJson();
+            nfa.render();
         },
         removeAcceptState: function () {
             var acceptState = prompt("Enter accept state to remove:");
@@ -302,7 +369,7 @@
                 nfa.acceptStates.splice(index, 1);
             }
 
-            nfa.renderJson();
+            nfa.render();
         },
         clearNfa: function () {
             nfa.states = [];
@@ -310,7 +377,7 @@
             nfa.startState = "";
             nfa.acceptStates = [];
 
-            nfa.renderJson();
+            nfa.render();
         },
         export: function () {
             var json = JSON.stringify(nfa);
@@ -337,7 +404,7 @@
                     nfa.startState = json.startState;
                     nfa.acceptStates = json.acceptStates;
 
-                    nfa.renderJson();
+                    nfa.render();
                 }
             }
         },
@@ -394,12 +461,13 @@
     };
 
     function initialize() {
-        nfa.renderJson();
+        nfa.render();
     }
 
     $(document).ready(function () {
         initialize();
     });
+
 </script>
 
 </html>
