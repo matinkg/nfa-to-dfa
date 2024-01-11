@@ -46,56 +46,74 @@
             </div>
         </div>
 
-        <div class="row">
-            <!-- NFA Section -->
-            <div class="col-md-6">
-                <h2>NFA</h2>
-                <!-- Buttons for NFA -->
-                <div class="mt-4 mb-2" style="line-height: 50px;">
-                    <button class="btn btn-primary" onclick="nfa.addState()">Add State</button>
-                    <button class="btn btn-primary" onclick="nfa.addTransition()">Add Transition</button>
-                    <button class="btn btn-primary" onclick="nfa.addAcceptState()">Add Accept State</button>
-                    <button class="btn btn-primary" onclick="nfa.setStartState()">Set Start State</button>
-                </div>
+        <div class="row gy-4">
+            <div class="col-12">
+                <!-- NFA Section -->
+                <div class="row gx-5">
+                    <div class="col-md-6">
+                        <h2>NFA</h2>
+                        <!-- Buttons for NFA -->
+                        <div class="mt-4 mb-2" style="line-height: 50px;">
+                            <button class="btn btn-primary" onclick="nfa.addState()">Add State</button>
+                            <button class="btn btn-primary" onclick="nfa.addTransition()">Add Transition</button>
+                            <button class="btn btn-primary" onclick="nfa.addAcceptState()">Add Accept State</button>
+                            <button class="btn btn-primary" onclick="nfa.setStartState()">Set Start State</button>
+                        </div>
 
-                <div class="my-2" style="line-height: 50px;">
-                    <button class="btn btn-danger" onclick="nfa.removeState()">Remove State</button>
-                    <button class="btn btn-danger" onclick="nfa.removeTransition()">Remove Transition</button>
-                    <button class="btn btn-danger" onclick="nfa.removeAcceptState()">Remove Accept State</button>
-                    <button class="btn btn-danger" onclick="nfa.clearNfa()">Clear</button>
-                </div>
+                        <div class="my-2" style="line-height: 50px;">
+                            <button class="btn btn-danger" onclick="nfa.removeState()">Remove State</button>
+                            <button class="btn btn-danger" onclick="nfa.removeTransition()">Remove Transition</button>
+                            <button class="btn btn-danger" onclick="nfa.removeAcceptState()">Remove Accept
+                                State</button>
+                            <button class="btn btn-danger" onclick="nfa.clearNfa()">Clear</button>
+                        </div>
 
-                <div class="mb-4" style="line-height: 50px;">
-                    <button class="btn btn-secondary" onclick="nfa.export()">Export</button>
-                    <button class="btn btn-secondary" onclick="nfa.import()">Import</button>
-                </div>
+                        <div class="mb-4" style="line-height: 50px;">
+                            <button class="btn btn-secondary" onclick="nfa.export()">Export</button>
+                            <button class="btn btn-secondary" onclick="nfa.import()">Import</button>
+                        </div>
 
 
-                <!-- JSON Text for NFA -->
-                <div class="mb-3">
-                    <textarea id="nfa-json-text" class="form-control" rows="7" readonly></textarea>
-                </div>
-                <!-- SVG for NFA -->
-                <div id="nfa-svg-container">
-                    <!-- SVG content will be added dynamically here -->
+                        <!-- JSON Text for NFA -->
+                        <div class="mb-3">
+                            <textarea id="nfa-json-text" class="form-control" rows="7" readonly></textarea>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <h2>Visual Representation</h2>
+                        <!-- SVG for NFA -->
+                        <div id="nfa-svg-container" class="mt-4" style="width: 100%; height: 400px;">
+                            <!-- SVG content will be added dynamically here -->
+                        </div>
+                    </div>
                 </div>
             </div>
 
             <!-- DFA Section -->
-            <div class="col-md-6">
-                <h2>DFA</h2>
-                <!-- Buttons for DFA -->
-                <div class="my-4" style="line-height: 50px;">
-                    <button class="btn btn-primary" onclick="convertNfaToDfa()">Convert NFA to DFA</button>
+            <div class="col-12">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h2>DFA</h2>
+                        <!-- Buttons for DFA -->
+                        <div class="my-4" style="line-height: 50px;">
+                            <button class="btn btn-primary" onclick="convertNfaToDfa()">Convert NFA to DFA</button>
+                        </div>
+                        <!-- JSON Text for DFA -->
+                        <div class="mb-3">
+                            <textarea id="dfa-json-text" class="form-control" rows="7" readonly></textarea>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <h2>Visual Representation</h2>
+                        <!-- SVG for DFA -->
+                        <div id="dfa-svg-container" class="mt-4" style="width: 100%; height: 400px;">
+                            <!-- SVG content will be added dynamically here -->
+                        </div>
+                    </div>
                 </div>
-                <!-- JSON Text for DFA -->
-                <div class="mb-3">
-                    <textarea id="dfa-json-text" class="form-control" rows="7" readonly></textarea>
-                </div>
-                <!-- SVG for DFA -->
-                <div id="dfa-svg-container">
-                    <!-- SVG content will be added dynamically here -->
-                </div>
+
             </div>
         </div>
 
@@ -292,25 +310,25 @@
 
             nfa.renderJson();
         },
-        export: function(){
+        export: function () {
             var json = JSON.stringify(nfa);
-            var blob = new Blob([json], {type: "application/json"});
-            var url  = URL.createObjectURL(blob);
+            var blob = new Blob([json], { type: "application/json" });
+            var url = URL.createObjectURL(blob);
 
             var a = document.createElement('a');
-            a.download    = "nfa.json";
-            a.href        = url;
+            a.download = "nfa.json";
+            a.href = url;
             a.textContent = "Download backup.json";
             a.click();
         },
-        import: function(){
+        import: function () {
             var file = document.createElement('input');
             file.type = 'file';
             file.click();
-            file.onchange = function(){
+            file.onchange = function () {
                 var reader = new FileReader();
                 reader.readAsText(file.files[0]);
-                reader.onload = function(){
+                reader.onload = function () {
                     var json = JSON.parse(reader.result);
                     nfa.states = json.states;
                     nfa.transitions = json.transitions;
