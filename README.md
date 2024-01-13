@@ -45,6 +45,10 @@ Make sure you have a modern web browser that supports HTML5 and JavaScript.
 5. Review the DFA in the visual representation and JSON format.
 6. Experiment with different automata configurations.
 
+## Known issues
+
+- The converter will crash if there are loop epsilon transitions in the NFA.
+
 ## Contributing
 
 If you find any issues or have suggestions for improvements, feel free to open an issue or submit PR.
