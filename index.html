@@ -697,6 +697,27 @@
                 dfa.states.push(dfaState.states);
             });
 
+            //create trap state if needed
+            dtrans_table.forEach(function (dfaState) {
+                symbols.forEach(function (symbol) {
+                    if (dfaState.canGoToStatesWith[symbol] == "") {
+                        if(dfa.states.indexOf("trap") == -1){
+                            //create the trap state
+                            dfa.states.push("trap");
+
+                            //add trap state transtitions
+                            symbols.forEach(function (symbol) {
+                                dfa.transitions.push({
+                                    "fromState": "trap",
+                                    "symbol": symbol,
+                                    "toState": "trap",
+                                });
+                            });
+                        }
+                    }
+                });
+            });
+
             //add transitions
             dtrans_table.forEach(function (dfaState) {
                 symbols.forEach(function (symbol) {
@@ -705,6 +726,12 @@
                             "fromState": dfaState.states,
                             "symbol": symbol,
                             "toState": dfaState.canGoToStatesWith[symbol],
+                        });
+                    } else {
+                        dfa.transitions.push({
+                            "fromState": dfaState.states,
+                            "symbol": symbol,
+                            "toState": "trap",
                         });
                     }
                 });
