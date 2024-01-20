@@ -47,7 +47,7 @@ Make sure you have a modern web browser that supports HTML5 and JavaScript.
 
 ## Known issues
 
-- The converter will crash if there are loop epsilon transitions in the NFA.
+- <del>The converter will crash if there are loop epsilon transitions in the NFA.</del>
 
 ## Contributing
 
